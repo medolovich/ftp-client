@@ -37,12 +37,10 @@ var (
 )
 
 type Client struct {
-	conn  *net.TCPConn
-	files chan []byte
+	conn *net.TCPConn
 }
 
 func (c *Client) drop() error {
-	close(c.files)
 	return c.conn.Close()
 }
 
@@ -69,8 +67,10 @@ func (c *Client) receive() (code string, message string, err error) {
 }
 
 func (c *Client) sendCommand(command string, expectedCodes ...string) (string, error) {
-	if err := c.send(fmt.Sprintf(command)); err != nil {
-		return "", err
+	if strings.TrimSpace(command) != "" {
+		if err := c.send(fmt.Sprintf(command)); err != nil {
+			return "", err
+		}
 	}
 
 	var message string
@@ -90,21 +90,21 @@ func (c *Client) sendCommand(command string, expectedCodes ...string) (string, e
 	return message, nil
 }
 
-func (c *Client) passLogin(ftpLogin string) error {
-	_, err := c.sendCommand(fmt.Sprintf("USER %s", ftpLogin), statusCodeNeedPassword)
-	return err
-}
-
-func (c *Client) passPassword(ftpPassword string) error {
-	_, err := c.sendCommand(fmt.Sprintf("PASS %s", ftpPassword), statusCodeLoginSuccess)
-	return err
-}
-
 func (c *Client) Login(ftpLogin, ftpPassword string) error {
-	if err := c.passLogin(ftpLogin); err != nil {
+	passLogin := func(ftpLogin string) error {
+		_, err := c.sendCommand(fmt.Sprintf("USER %s", ftpLogin), statusCodeNeedPassword)
+		return err
+	}
+
+	passPassword := func(ftpPassword string) error {
+		_, err := c.sendCommand(fmt.Sprintf("PASS %s", ftpPassword), statusCodeLoginSuccess)
+		return err
+	}
+
+	if err := passLogin(ftpLogin); err != nil {
 		return fmt.Errorf("Passing login failed: %v", err)
 	}
-	if err := c.passPassword(ftpPassword); err != nil {
+	if err := passPassword(ftpPassword); err != nil {
 		return fmt.Errorf("Passing password failed: %v", err)
 	}
 	// Set binary transport type
@@ -149,11 +149,11 @@ func (c *Client) List() (string, error) {
 	if err != nil {
 		return "", err
 	}
+	defer addConn.Close()
 	_, err = c.sendCommand("LIST", statusCodeAboutToOpenConnection, statusCodeClosingDataConnection)
 	if err != nil {
 		return "", err
 	}
-	defer addConn.Close()
 	buf, err := readAll(addConn)
 	if err != nil {
 		return "", err
@@ -210,10 +210,7 @@ func NewClient() (*Client, error) {
 	if !ok {
 		log.Fatal("conn assertion failed")
 	}
-	c := Client{
-		conn:  tcpConn,
-		files: make(chan []byte),
-	}
+	c := Client{conn: tcpConn}
 	// Receive the greeting message from vsftpd or something like that
 	// to not to receive it again in the future
 	_, err = c.sendCommand("", statusCodeReadyForNewUser)
