@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,9 +12,6 @@ import (
 )
 
 const (
-	ftpServerHost = "localhost" // TODO: set from env
-	ftpServerPort = 21          // TODO: set from env
-
 	ftpResponseCodePartEndIndex      = 3
 	ftpResponseMessagePartStartIndex = 4
 
@@ -31,6 +29,11 @@ const (
 	statusCodePathnameCreated          = "257"
 	statusCodeNeedPassword             = "331"
 	statusCodeRequestFilePending       = "350"
+)
+
+var (
+	ftpServerHost = os.Getenv("FTP_HOST")
+	ftpServerPort = os.Getenv("FTP_PORT")
 )
 
 type Client struct {
@@ -104,6 +107,10 @@ func (c *Client) Login(ftpLogin, ftpPassword string) error {
 	if err := c.passPassword(ftpPassword); err != nil {
 		return fmt.Errorf("Passing password failed: %v", err)
 	}
+	// Set binary transport type
+	if err := c.SetBinaryType(); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -121,8 +128,8 @@ func (c *Client) enterPassive() (string, error) {
 	}
 	r := regexp.MustCompile("(?i)" + `^entering passive mode \((\d+,\d+,\d+,\d+,\d+,\d+)\)`)
 	all := r.FindStringSubmatch(msg)
-	if len(all) == 0 {
-		return "", fmt.Errorf("regex parse string \"%s\" error", msg)
+	if len(all) < 2 {
+		return "", fmt.Errorf("Parsing string \"%s\" with regex failed", msg)
 	}
 	needle := all[1]
 	octets := strings.Split(needle, ",")
@@ -133,7 +140,7 @@ func (c *Client) enterPassive() (string, error) {
 	return fmt.Sprintf("%s:%d", host, port), nil
 }
 
-func (c *Client) List() (string, error) { // TODO: parse output into good old files slice
+func (c *Client) List() (string, error) {
 	addr, err := c.enterPassive()
 	if err != nil {
 		return "", err
@@ -195,7 +202,7 @@ func (c *Client) SetBinaryType() error {
 }
 
 func NewClient() (*Client, error) {
-	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%d", ftpServerHost, ftpServerPort), 5*time.Second)
+	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", ftpServerHost, ftpServerPort), 5*time.Second)
 	if err != nil {
 		return nil, err
 	}
@@ -211,10 +218,6 @@ func NewClient() (*Client, error) {
 	// to not to receive it again in the future
 	_, err = c.sendCommand("", statusCodeReadyForNewUser)
 	if err != nil {
-		return nil, err
-	}
-	// Set binary type immediately
-	if err := c.SetBinaryType(); err != nil {
 		return nil, err
 	}
 	return &c, nil
