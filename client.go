@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	ftpServerHost = "localhost"
-	ftpServerPort = 21
+	ftpServerHost = "localhost" // TODO: set from env
+	ftpServerPort = 21          // TODO: set from env
 
 	ftpResponseCodePartEndIndex      = 3
 	ftpResponseMessagePartStartIndex = 4
