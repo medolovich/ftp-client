@@ -26,7 +26,13 @@ const (
 	notExistingFileName = "not_existing_file"
 )
 
-var c *Client
+var (
+	c *Client
+
+	login    = os.Getenv(envLogin)
+	password = os.Getenv(envPassword)
+	filesDir = os.Getenv(envFilesDir)
+)
 
 func TestNewClient(t *testing.T) {
 	var err error
@@ -37,13 +43,13 @@ func TestNewClient(t *testing.T) {
 }
 
 func TestLogin(t *testing.T) {
-	err := c.Login(os.Getenv(envLogin), os.Getenv(envPassword))
+	err := c.Login(login, password)
 	assert.Nil(t, err, nilAssertMessage)
 }
 
 func TestList(t *testing.T) {
 	list, err := c.List()
-	assert.Equal(t, true, strings.Contains(list, os.Getenv(envFilesDir)))
+	assert.Equal(t, true, strings.Contains(list, filesDir))
 	assert.Nil(t, err, nilAssertMessage)
 }
 
