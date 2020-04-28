@@ -210,5 +210,12 @@ func NewClient() (*Client, error) {
 	// Receive the greeting message from vsftpd or something like that
 	// to not to receive it again in the future
 	_, err = c.sendCommand("", statusCodeReadyForNewUser)
-	return &c, err
+	if err != nil {
+		return nil, err
+	}
+	// Set binary type immediately
+	if err := c.SetBinaryType(); err != nil {
+		return nil, err
+	}
+	return &c, nil
 }
