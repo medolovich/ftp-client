@@ -1,4 +1,5 @@
  - Downloading
  - Uploading
- - Documentation
  - List should return slice of filenames, not default ls -la output
+ - Documentation
+ - Cross-platforming
