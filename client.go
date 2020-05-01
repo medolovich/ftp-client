@@ -11,26 +11,6 @@ import (
 	"time"
 )
 
-const (
-	ftpResponseCodePartEndIndex      = 3
-	ftpResponseMessagePartStartIndex = 4
-
-	newLineChar = "\n" // cross-platforming will die here
-	tabChar     = "\t"
-
-	statusCodeAboutToOpenConnection    = "150"
-	statusCodeActionSuccess            = "200"
-	statusCodeReadyForNewUser          = "220"
-	statusCodeClosingControlConnection = "221"
-	statusCodeClosingDataConnection    = "226"
-	statusCodeEnterPassiveMode         = "227"
-	statusCodeLoginSuccess             = "230"
-	statusCodeRequestFileActionOK      = "250"
-	statusCodePathnameCreated          = "257"
-	statusCodeNeedPassword             = "331"
-	statusCodeRequestFilePending       = "350"
-)
-
 var (
 	ftpServerHost = os.Getenv("FTP_HOST")
 	ftpServerPort = os.Getenv("FTP_PORT")

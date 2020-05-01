@@ -5,13 +5,6 @@ import (
 	"net"
 )
 
-const (
-	packetSize = 0x20
-
-	newLineLinuxASCII   = 0x0a
-	newLineWindowsASCII = 0x85
-)
-
 func readAll(conn net.Conn) ([]byte, error) {
 	buf := make([]byte, 0, 8*packetSize)
 	tmpBuf := make([]byte, packetSize)
