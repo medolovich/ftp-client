@@ -100,10 +100,11 @@ func (c *Client) enterPassive() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	r := regexp.MustCompile("(?i)" + `^entering passive mode \((\d+,\d+,\d+,\d+,\d+,\d+)\)`)
+	regex := "(?i)" + `^entering passive mode \((\d+,\d+,\d+,\d+,\d+,\d+)\)`
+	r := regexp.MustCompile(regex)
 	all := r.FindStringSubmatch(msg)
 	if len(all) < 2 {
-		return "", fmt.Errorf("Parsing string \"%s\" with regex failed", msg)
+		return "", fmt.Errorf("Parsing string \"%s\" by regex \"%s\" failed", msg, regex)
 	}
 	needle := all[1]
 	octets := strings.Split(needle, ",")
