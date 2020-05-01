@@ -14,6 +14,8 @@ const (
 	notNilAssertMessage = "expecting not-nil"
 	nilAssertMessage    = "expecting nil"
 
+	envFTPHost  = "FTP_HOST"
+	envFTPPort  = "FTP_PORT"
 	envLogin    = "LOGIN"
 	envPassword = "PASSWORD"
 	envFilesDir = "FILES_DIR"
@@ -29,6 +31,8 @@ const (
 var (
 	c *Client
 
+	ftpHost  = os.Getenv(envFTPHost)
+	ftpPort  = os.Getenv(envFTPPort)
 	login    = os.Getenv(envLogin)
 	password = os.Getenv(envPassword)
 	filesDir = os.Getenv(envFilesDir)
@@ -36,7 +40,7 @@ var (
 
 func TestNewClient(t *testing.T) {
 	var err error
-	c, err = NewClient()
+	c, err = NewClient(ftpHost, ftpPort)
 
 	assert.NotNil(t, c, notNilAssertMessage)
 	assert.Nil(t, err, nilAssertMessage)

@@ -4,16 +4,10 @@ import (
 	"fmt"
 	"log"
 	"net"
-	"os"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
-)
-
-var (
-	ftpServerHost = os.Getenv("FTP_HOST")
-	ftpServerPort = os.Getenv("FTP_PORT")
 )
 
 type Client struct {
@@ -181,7 +175,7 @@ func (c *Client) SetBinaryType() error {
 	return err
 }
 
-func NewClient() (*Client, error) {
+func NewClient(ftpServerHost, ftpServerPort string) (*Client, error) {
 	conn, err := net.DialTimeout("tcp", fmt.Sprintf("%s:%s", ftpServerHost, ftpServerPort), 5*time.Second)
 	if err != nil {
 		return nil, err
